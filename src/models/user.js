@@ -1,5 +1,6 @@
 const { type } = require("express/lib/response");
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema =  new mongoose.Schema(
     {
@@ -18,10 +19,20 @@ const userSchema =  new mongoose.Schema(
             required: true,
             unique : true,
             trim : true,
+            validate(value){
+                if(!validator.isEmail(value)){
+                    throw new Error("Invalid Email Adddress" + value);
+                }
+            }
         },
         password:{
             type: String,
             required : true,
+              validate(value){
+                if(!validator.isURL(value)){
+                    throw new Error("Enter a strong Password" + value);
+                }
+            }
         },
         age:{
             type:Number,
@@ -37,6 +48,11 @@ const userSchema =  new mongoose.Schema(
         },
         photoUrl:{
             type: String,
+             validate(value){
+                if(!validator.isURL(value)){
+                    throw new Error("Invalid URL" + value);
+                }
+            }
         },
         about:{
             type:String,

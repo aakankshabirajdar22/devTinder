@@ -15,10 +15,10 @@ app.post("/signup", async (req, res) => {
         await user.save();
         res.send("User Added Succesfully");
     } catch (err) {
-        res.status(400).send("something Went wrong didnt save user");
+        res.status(400).send("something Went wrong didnt save user" + err.message);
     }
 
-})
+});
 
 //Get user by email
 app.get("/user", async (req, res) => {
