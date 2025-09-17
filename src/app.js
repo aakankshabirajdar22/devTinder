@@ -3,19 +3,64 @@ const express = require('express');
 const connectDB = require("./config/database");
 const req = require('express/lib/request');
 const User = require("./models/user");
+const {validateSignUpData} = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-    const user = new User(req.body);
-
     try {
+
+        //validation of data
+        validateSignUpData(req);
+
+        //encrypt the password
+        const {firstName, lastName, email, password} = req.body;
+
+        const passwordHash = await bcrypt.hash(password , 10);
+
+        console.log(passwordHash);
+
+        //creating new instance of user model
+        const user = new User({
+            firstName,
+            lastName,
+            email,
+            password: passwordHash,
+        });
+
         await user.save();
         res.send("User Added Succesfully");
     } catch (err) {
-        res.status(400).send("something Went wrong didnt save user" + err.message);
+        res.status(400).send("Error : " + err.message);
+    }
+
+});
+
+app.post("/login", async (req,res)=>{
+
+    try{
+
+        const {email, password} =req.body;
+
+        const user = await User.findOne({email: email});
+        if(!user){
+            throw new Error("Email is not present in DB");
+
+        };
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if(isPasswordValid){
+            res.send("User Login Successfully!!");
+        }else{
+            throw new Error("User Login Failed");
+        }
+
+    } catch (err) {
+        res.status(400).send("Error : " + err.message);
     }
 
 });
@@ -46,6 +91,7 @@ app.get("/feed", async (req, res) => {
     }
 });
 
+//delete user 
 app.delete("/user", async(req,res)=>{
      const userId = req.body.userId;
   try {
@@ -58,6 +104,7 @@ app.delete("/user", async(req,res)=>{
    
 });
 
+//update the user data
 app.patch("/user" , async(req, res)=>{
      const userId = req.body.userId;
      const data = req.body; 
@@ -90,6 +137,8 @@ app.patch("/user" , async(req, res)=>{
     }
 });
 
+
+//Database Connection
 connectDB()
     .then(() => {
         console.log("Database Connection Established");

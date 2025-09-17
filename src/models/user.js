@@ -29,7 +29,7 @@ const userSchema =  new mongoose.Schema(
             type: String,
             required : true,
               validate(value){
-                if(!validator.isURL(value)){
+                if(validator.isURL(value)){
                     throw new Error("Enter a strong Password" + value);
                 }
             }
